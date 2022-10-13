@@ -1,0 +1,41 @@
+on: [push]
+
+name: Deploy Bicep Temlates
+
+jobs:
+
+    deploy:
+      runs-on: ubuntu-latest
+      steps:
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Deploy Application Insights
+        uses: azure/arm-deploy@v1
+        with:
+          resourceGroupName: 'github-actions'
+          template: templates/applicationinsights.bicep
+          parameters: '_applicationInsightsName="apintest20221013"'
+          failOnStdErr: true         
+
+      - name: Deploy Storage
+        uses: azure/arm-deploy@v1
+        with:
+          resourceGroupName: 'github-actions'
+          template: templates/storage.bicep
+          parameters: '_storageAccountName="stgsbtest20221012"'
+          failOnStdErr: true        
+
+      - name: Deploy Function App
+        uses: azure/arm-deploy@v1
+        with:
+          resourceGroupName: github-actions
+          template: templates/function.bicep
+          parameters: '_appServicePlanName="fnappsb20221012" _functionAppApplicationName="fnsb20221012" _storageAccountName="stgsbtest20221012" _applicationInsightsName="apintest20221013"'
+          failOnStdErr: true         
